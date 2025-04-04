@@ -1,0 +1,34 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.db
+*.sqlite3
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDEs & tools
+.vscode/
+.idea/
+*.swp
+
+# Environment variables
+.env
+
+# MacOS-specific
+.DS_Store
+
+# Playwright stuff 
+playwright-report/
+test-results/
+
+# Logs
+*.log
+
+# Ollama model cache 
+~/.ollama/
