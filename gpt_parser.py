@@ -22,7 +22,13 @@ async def parse_command(command: str) -> list:
                     "]"
                     "Input: Click the first video\n"
                     "Output: {\"action\": \"click\", \"selector\": \"ytd-video-renderer a#thumbnail\"}\n"
-
+                    "Input: Log into the-internet.herokuapp.com with email tomsmith and password SuperSecretPassword!\n"
+                    "Output: [\n"
+                    "  {\"action\": \"goto\", \"url\": \"https://the-internet.herokuapp.com/login\"},\n"
+                    "  {\"action\": \"fill\", \"selector\": \"#username\", \"value\": \"tomsmith\"},\n"
+                    "  {\"action\": \"fill\", \"selector\": \"#password\", \"value\": \"SuperSecretPassword!\"},\n"
+                    "  {\"action\": \"click\", \"selector\": \"button[type='submit']\"}\n"
+                    "]"
                 )
             },
             {"role": "user", "content": command},

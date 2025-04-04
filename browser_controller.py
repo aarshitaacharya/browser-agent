@@ -10,6 +10,14 @@ async def execute_action(actions: list, page):
                 await page.fill('input[type="text"]', action["query"])
                 await page.keyboard.press("Enter")
 
+            elif action["action"] == "fill":
+                selector = action.get("selector")
+                value = action.get("value")
+                if not selector or not value:
+                    results.append("Failed action: fill - missing selector or value")
+                else:
+                    await page.fill(selector, value)
+
             elif action["action"] == "click":
                 selector = action.get("selector")
                 if not selector:
@@ -17,9 +25,6 @@ async def execute_action(actions: list, page):
                 else:
                     await page.wait_for_selector(selector, timeout=10000)
                     await page.click(selector)
-
-            elif action["action"] == "fill":
-                await page.fill(action["selector"], action["value"])
 
             elif action["action"] == "login":
                 await page.goto(action["site"])
