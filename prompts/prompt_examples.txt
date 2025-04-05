@@ -1,0 +1,54 @@
+Input: Search for cute puppies on YouTube
+Output: [
+  {"action": "goto", "url": "https://www.youtube.com"},
+  {"action": "fill", "selector": "input[name='search_query']", "value": "cute puppies"},
+  {"action": "keyboard_press", "key": "Enter"}
+]
+
+Input: Click the first video on YouTube
+Output: [
+  {"action": "click", "selector": "ytd-video-renderer a#thumbnail"}
+]
+
+Input: Search for quantum computing on Google
+Output: [
+  { "action": "goto", "url": "https://www.google.com" },
+  { "action": "dismiss_popup" },
+  { "action": "wait", "duration": 1000 },
+  { "action": "fill", "selector": "textarea.gLFyf", "value": "quantum computing" },
+  { "action": "keyboard_press", "key": "Enter" }
+]
+
+
+Input: Go to example.com and extract the main heading
+Output: [
+  {"action": "goto", "url": "https://example.com"},
+  {"action": "extract", "selector": "h1"}
+]
+
+Input: Go to Wikipedia and scroll down
+Output: [
+  {"action": "goto", "url": "https://www.wikipedia.org"},
+  {"action": "scroll", "direction": "down"},
+  {"action": "wait", "duration": 2000}
+]
+
+Input: Take a screenshot of the current page
+Output: [
+  {"action": "screenshot", "path": "screenshot.png"}
+]
+
+Input: Log in to the-internet.herokuapp.com with username tomsmith and password SuperSecretPassword!
+Output: [
+  {"action": "goto", "url": "https://the-internet.herokuapp.com/login"},
+  {"action": "fill", "selector": "#username", "value": "tomsmith"},
+  {"action": "fill", "selector": "#password", "value": "SuperSecretPassword!"},
+  {"action": "click", "selector": "button[type='submit']"}
+]
+
+Input: Open Reddit and search for AI agents
+Output: [
+  {"action": "goto", "url": "https://www.reddit.com"},
+  {"action": "fill", "selector": "input[type='search']", "value": "AI agents"},
+  {"action": "keyboard_press", "key": "Enter"}
+]
