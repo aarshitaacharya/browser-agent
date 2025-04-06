@@ -54,16 +54,23 @@ async def handle_click(action: dict, page: Page):
             if el.get("role") == role_target or el.get("tag") == role_target.upper()
         ]
 
-        if filtered and position < len(filtered):
-            selector = filtered[position]["selector_snippet"]
+        if filtered:
+            selector = filtered[0]["selector_snippet"]  # Use first match to extract selector
             try:
-                await page.wait_for_selector(selector, timeout=10000)
-                await page.click(selector)
-                return f"Executed dynamic click on element with selector '{selector}' (text: '{filtered[position]['text']}')"
+                # Get all elements matching that selector from the **live page**
+                element_handles = await page.query_selector_all(selector)
+
+                if not element_handles or position >= len(element_handles):
+                    return f"No visible element at position {position + 1} for selector '{selector}'"
+
+                target = element_handles[position]
+                await target.scroll_into_view_if_needed()
+                await target.click()
+                return f"Executed visible click on element with selector '{selector}' at position {position + 1}"
             except Exception as e:
-                return f"Failed to click on selector '{selector}': {str(e)}"
+                return f"Failed to click on selector '{selector}' at position {position + 1}: {str(e)}"
         else:
-            return f"No element found matching role '{role_target}' at position {position + 1}"
+            return f"No element found matching role '{role_target}'"
 
     # Priority 2: Use LLM-specified selector if present
     selector = action.get("selector")
