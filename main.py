@@ -5,12 +5,16 @@ from gpt_parser import parse_command
 from browser_controller import execute_action
 from browser_session import browser_session
 from fastapi.middleware.cors import CORSMiddleware
+from extract_api import router as extract_router
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Starting browser session...")
     await browser_session.start()
+
+    app.state.page = browser_session.page
 
     print("🧠 Pinging LLM to warm it up...")
     try:
@@ -25,6 +29,7 @@ async def lifespan(app: FastAPI):
     await browser_session.stop()
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(extract_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -10,6 +10,15 @@ Output: [
   {"action": "click", "selector": "ytd-video-renderer a#thumbnail"}
 ]
 
+Input: Click the second video
+Output: [{ "action": "click", "target": "video", "position": 2 }]
+
+Input: Click the first link
+Output: [{ "action": "click", "target": "link", "position": 1 }]
+
+Input: Click the last button
+Output: [{ "action": "click", "target": "button", "position": -1 }]
+
 Input: Search for quantum computing on Google
 Output: [
   { "action": "goto", "url": "https://www.google.com" },
@@ -51,4 +60,13 @@ Output: [
   {"action": "goto", "url": "https://www.reddit.com"},
   {"action": "fill", "selector": "input[type='search']", "value": "AI agents"},
   {"action": "keyboard_press", "key": "Enter"}
+]
+
+Input: Search for iPhone 16 on Flipkart and click the first product
+Output: [
+  {"action": "goto", "url": "https://www.flipkart.com"},
+  {"action": "fill", "value": "iPhone 16"},
+  {"action": "keyboard_press", "key": "Enter"},
+  {"action": "wait", "duration": 2000},
+  {"action": "click", "target": "link", "position": 0}
 ]
