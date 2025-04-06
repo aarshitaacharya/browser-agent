@@ -7,17 +7,23 @@ Output: [
 
 Input: Click the first video on YouTube
 Output: [
-  {"action": "click", "selector": "ytd-video-renderer a#thumbnail"}
+  {"action": "click", "query": "first video"}
 ]
 
-Input: Click the second video
-Output: [{ "action": "click", "target": "video", "position": 2 }]
+Input: Click the first product
+Output: [{ "action": "click", "query": "first product" }]
 
-Input: Click the first link
-Output: [{ "action": "click", "target": "link", "position": 1 }]
+Input: Click the second link
+Output: [{ "action": "click", "query": "second link" }]
 
-Input: Click the last button
-Output: [{ "action": "click", "target": "button", "position": -1 }]
+Input: Click the login button
+Output: [{ "action": "click", "query": "login button" }]
+
+Input: Click the first image
+Output: [{ "action": "click", "query": "first image" }]
+
+Input: Click the submit button
+Output: [{ "action": "click", "query": "submit button" }]
 
 Input: Search for quantum computing on Google
 Output: [
@@ -27,7 +33,6 @@ Output: [
   { "action": "fill", "selector": "textarea.gLFyf", "value": "quantum computing" },
   { "action": "keyboard_press", "key": "Enter" }
 ]
-
 
 Input: Go to example.com and extract the main heading
 Output: [
@@ -52,7 +57,7 @@ Output: [
   {"action": "goto", "url": "https://the-internet.herokuapp.com/login"},
   {"action": "fill", "selector": "#username", "value": "tomsmith"},
   {"action": "fill", "selector": "#password", "value": "SuperSecretPassword!"},
-  {"action": "click", "selector": "button[type='submit']"}
+  {"action": "click", "query": "login button"}
 ]
 
 Input: Open Reddit and search for AI agents
@@ -68,5 +73,5 @@ Output: [
   {"action": "fill", "value": "iPhone 16"},
   {"action": "keyboard_press", "key": "Enter"},
   {"action": "wait", "duration": 2000},
-  {"action": "click", "target": "link", "position": 0}
+  {"action": "click", "query": "first product link"}
 ]

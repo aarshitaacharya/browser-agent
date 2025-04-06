@@ -7,8 +7,6 @@ from browser_session import browser_session
 from fastapi.middleware.cors import CORSMiddleware
 from extract_api import router as extract_router
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Starting browser session...")

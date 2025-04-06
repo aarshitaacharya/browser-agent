@@ -1,46 +1,78 @@
-async def handle_click(action, page):
-    selector = action.get("selector")
-    target = action.get("target", "link")
-    position = action.get("position", 0)
-    results = []
+import re
+import httpx
+from playwright.async_api import Page
 
-    # Try selector first
-    if selector:
-        try:
-            await page.wait_for_selector(selector, timeout=5000)
-            await page.click(selector)
-            return f"Executed action: click (selector)"
-        except Exception as e:
-            results.append(f"Selector failed: {selector}, error: {e}")
+async def handle_click(action: dict, page: Page):
+    print("Using extract API to find elements for click...")
 
-    # Map known targets to selectors
-    selector_map = {
-        "link": "a[href]",
-        "video": "ytd-video-renderer a#thumbnail, a[href]",
-        "button": "button, [role='button'], input[type='submit']",
-        "image": "img",
-        "input": "input, textarea",
-        "any": "a[href], button, [role='button'], input",
+    # Call extract API
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post("http://localhost:8000/extract")
+            data = response.json()
+    except Exception as e:
+        return f"Failed to call extract API: {str(e)}"
+
+    if "elements" not in data:
+        return "No elements returned from extract API"
+
+    elements = data["elements"]
+    query = action.get("query", "").lower().strip()
+
+    print("Handling click...")
+    print(f"Click Query: {query}")
+
+    if not query:
+        return "Click failed - no query provided"
+
+    # Priority 1: Match by ordinal + role
+    ordinal_map = {
+        "first": 0,
+        "second": 1,
+        "third": 2,
+        "fourth": 3
     }
 
-    target_selector = selector_map.get(target, selector_map["any"])
-    elements = page.locator(target_selector)
-    count = await elements.count()
+    role_match = re.search(r"(first|second|third|fourth)?\s*(login|product|link|image|button)", query)
+    if role_match:
+        ordinal = role_match.group(1) or "first"
+        role = role_match.group(2)
 
-    if count == 0:
-        return f"Failed action: click - no {target} elements found"
+        role_lookup = {
+            "login": "login_button",
+            "product": "product_link",
+            "link": "link",  # fallback to tag if no role match
+            "image": "IMG",
+            "button": "BUTTON"
+        }
 
-    # Handle negative positions like -1 (last)
-    if position < 0:
-        position = count + position
+        position = ordinal_map.get(ordinal, 0)
+        role_target = role_lookup.get(role, role)
 
-    if position >= count or position < 0:
-        return f"Failed action: click - invalid position ({position}) for {count} elements"
+        filtered = [
+            el for el in elements
+            if el.get("role") == role_target or el.get("tag") == role_target.upper()
+        ]
 
-    try:
-        element = elements.nth(position)
-        await element.scroll_into_view_if_needed()
-        await element.click()
-        return f"Executed action: click {target} #{position + 1}"
-    except Exception as e:
-        return f"Failed action: click {target} #{position + 1} - {e}"
+        if filtered and position < len(filtered):
+            selector = filtered[position]["selector_snippet"]
+            try:
+                await page.wait_for_selector(selector, timeout=10000)
+                await page.click(selector)
+                return f"Executed dynamic click on element with selector '{selector}' (text: '{filtered[position]['text']}')"
+            except Exception as e:
+                return f"Failed to click on selector '{selector}': {str(e)}"
+        else:
+            return f"No element found matching role '{role_target}' at position {position + 1}"
+
+    # Priority 2: Use LLM-specified selector if present
+    selector = action.get("selector")
+    if selector:
+        try:
+            await page.wait_for_selector(selector, timeout=10000)
+            await page.click(selector)
+            return f"Executed generic click using selector '{selector}'"
+        except Exception as e:
+            return f"Failed to click using selector '{selector}': {str(e)}"
+
+    return "Click failed - no valid selector, tag, or role-based match found"

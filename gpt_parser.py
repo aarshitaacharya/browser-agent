@@ -24,6 +24,10 @@ async def parse_command(command: str) -> list:
             {"role": "user", "content": command},
         ]
     )
+    print("🧠 Prompt sent to LLM:")
+    print(SYSTEM_PROMPT)
+    print("💬 User said:", command)
+    print("🧾 LLM response:", response['message']['content'])
 
     content = response['message']['content']
 
