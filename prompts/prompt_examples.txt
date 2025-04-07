@@ -64,6 +64,7 @@ Output: [
 Input: Open Reddit and search for AI agents
 Output: [
   {"action": "goto", "url": "https://www.reddit.com"},
+  {"action": "wait", "duration": 2000},
   {"action": "fill", "selector": "input[name='q']", "value": "AI agents"},
   {"action": "keyboard_press", "key": "Enter"}
 ]
@@ -76,3 +77,6 @@ Output: [
   {"action": "wait", "duration": 2000},
   {"action": "click", "query": "first product link"}
 ]
+
+Input: Click the add to cart button
+Output: [{ "action": "click", "query": "add to cart button" }]

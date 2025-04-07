@@ -65,7 +65,13 @@ def build_safe_selector(tag):
 
 def infer_role(tag, src=""):
     tag_name = tag.name.lower()
-    text = tag.get_text(strip=True).lower()
+    text = (
+        tag.get_text(strip=True).lower()
+        + tag.get("value", "").lower()
+        + tag.get("name", "").lower()
+        + tag.get("id", "").lower()
+    )
+
     alt = tag.get("alt", "").lower()
     href = tag.get("href", "") or ""
     name = tag.get("name", "").lower()
@@ -73,11 +79,15 @@ def infer_role(tag, src=""):
     tag_id = tag.get("id", "").lower()
     classes = " ".join(tag.get("class", [])).lower()
 
-    if tag_name in ["a", "button"] and any(keyword in text for keyword in ["login", "sign in"]):
+    if tag_name in ["a", "button", "input"] and "login" in text:
+        return "login_button"
+    if tag_name == "button" and "add to cart" in text:
+        return "add_to_cart_button"
+    if tag_name == "input" and tag.get("type") == "submit" and "login" in text:
         return "login_button"
     if tag_name == "input" and ("search" in name or "search" in placeholder):
         return "search_input"
-    if tag_name == "img" and ("logo" in alt or "logo" in src):
+    if tag_name == "img" and ("logo" in alt or "logo" in tag.get("src", "")):
         return "logo"
     if tag_name in ["a", "img"] and any(x in href for x in ["/product", "?pid=", "/p/"]):
         return "product_link"
@@ -85,4 +95,12 @@ def infer_role(tag, src=""):
         return "submit_button"
     if tag_name == "input" and tag.get("type") == "submit":
         return "submit_button"
+    if tag_name in ["a", "img"] and (
+        any(sub in href for sub in ["item_", "product", "pid", "/p/", "/product"]) or
+        "inventory_item" in " ".join(tag.get("class", [])).lower()
+    ):
+        return "product_link"
+
+    
+
     return "unknown"

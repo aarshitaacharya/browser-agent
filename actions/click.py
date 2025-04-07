@@ -1,6 +1,11 @@
 import re
 import httpx
 from playwright.async_api import Page
+import difflib
+
+def is_similar(text1, text2):
+    return difflib.SequenceMatcher(None, text1.lower(), text2.lower()).ratio() > 0.6
+
 
 async def handle_click(action: dict, page: Page):
     print("Using extract API to find elements for click...")
@@ -43,7 +48,9 @@ async def handle_click(action: dict, page: Page):
             "product": "product_link",
             "link": "link",  # fallback to tag if no role match
             "image": "IMG",
-            "button": "BUTTON"
+            "add to cart": "add_to_cart_button",
+            "button": "BUTTON",
+            
         }
 
         position = ordinal_map.get(ordinal, 0)
