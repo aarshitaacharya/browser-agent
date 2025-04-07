@@ -38,7 +38,8 @@ async def handle_click(action: dict, page: Page):
         "fourth": 3
     }
 
-    role_match = re.search(r"(first|second|third|fourth)?\s*(login|product|link|image|button)", query)
+    role_match = re.search(r"(first|second|third|fourth)?\s*(login|product|link|image|button|add to cart)", query)
+
     if role_match:
         ordinal = role_match.group(1) or "first"
         role = role_match.group(2)
@@ -46,7 +47,7 @@ async def handle_click(action: dict, page: Page):
         role_lookup = {
             "login": "login_button",
             "product": "product_link",
-            "link": "link",  # fallback to tag if no role match
+            "link": "link",  
             "image": "IMG",
             "add to cart": "add_to_cart_button",
             "button": "BUTTON",

@@ -16,6 +16,9 @@ Output: [{ "action": "click", "query": "first product" }]
 Input: Click the second link
 Output: [{ "action": "click", "query": "second link" }]
 
+Input: Click the add to cart button
+Output: [{ "action": "click", "query": "add to cart button" }]
+
 Input: Click the login button
 Output: [{ "action": "click", "query": "login button" }]
 
@@ -78,5 +81,4 @@ Output: [
   {"action": "click", "query": "first product link"}
 ]
 
-Input: Click the add to cart button
-Output: [{ "action": "click", "query": "add to cart button" }]
+
