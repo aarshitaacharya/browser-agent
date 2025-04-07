@@ -100,6 +100,9 @@ def infer_role(tag, src=""):
         "inventory_item" in " ".join(tag.get("class", [])).lower()
     ):
         return "product_link"
+    if tag.name == "a" and tag.get("id") == "thumbnail":
+        return "video"
+
 
     
 

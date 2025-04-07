@@ -23,6 +23,7 @@ async def handle_click(action: dict, page: Page):
         return "No elements returned from extract API"
 
     elements = data["elements"]
+    print("Action recieved:", action)
     query = action.get("query", "").lower().strip()
 
     print("Handling click...")
@@ -52,7 +53,7 @@ async def handle_click(action: dict, page: Page):
             "image": "IMG",
             "add to cart": "add_to_cart_button",
             "button": "BUTTON",
-            
+            "video": "VIDEO",
         }
 
         position = ordinal_map.get(ordinal, 0)
@@ -84,6 +85,7 @@ async def handle_click(action: dict, page: Page):
     # Priority 2: Use LLM-specified selector if present
     selector = action.get("selector")
     if selector:
+        print(f"Using selector from action: {selector}")
         try:
             await page.wait_for_selector(selector, timeout=10000)
             await page.click(selector)
