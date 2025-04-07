@@ -7,7 +7,7 @@ Output: [
 
 Input: Click the first video on YouTube
 Output: [
-  {"action": "click", "query": "first video"}
+  {"action": "click", "query": "first video", "selector": "ytd-video-renderer a#thumbnail"}
 ]
 
 Input: Click the first product
@@ -40,9 +40,10 @@ Output: [
   {"action": "extract", "selector": "h1"}
 ]
 
-Input: Go to Wikipedia and scroll down
+Input: Go to Wikipedia search for quantum computing and scroll down
 Output: [
   {"action": "goto", "url": "https://www.wikipedia.org"},
+  {"action": "fill", "selector": "input[name='search']", "value": "quantum computing"},
   {"action": "scroll", "direction": "down"},
   {"action": "wait", "duration": 2000}
 ]
@@ -63,7 +64,7 @@ Output: [
 Input: Open Reddit and search for AI agents
 Output: [
   {"action": "goto", "url": "https://www.reddit.com"},
-  {"action": "fill", "selector": "input[type='search']", "value": "AI agents"},
+  {"action": "fill", "selector": "input[name='q']", "value": "AI agents"},
   {"action": "keyboard_press", "key": "Enter"}
 ]
 
