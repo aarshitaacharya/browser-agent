@@ -3,6 +3,7 @@ import httpx
 from playwright.async_api import Page
 import difflib
 
+
 def is_similar(text1, text2):
     return difflib.SequenceMatcher(None, text1.lower(), text2.lower()).ratio() > 0.6
 
