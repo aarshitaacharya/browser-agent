@@ -37,12 +37,6 @@ Output: [
   { "action": "keyboard_press", "key": "Enter" }
 ]
 
-Input: Go to example.com and extract the main heading
-Output: [
-  {"action": "goto", "url": "https://example.com"},
-  {"action": "extract", "selector": "h1"}
-]
-
 Input: Go to Wikipedia search for quantum computing and scroll down
 Output: [
   {"action": "goto", "url": "https://www.wikipedia.org"},
@@ -62,14 +56,6 @@ Output: [
   {"action": "fill", "selector": "#username", "value": "tomsmith"},
   {"action": "fill", "selector": "#password", "value": "SuperSecretPassword!"},
   {"action": "click", "query": "login button"}
-]
-
-Input: Open Reddit and search for AI agents
-Output: [
-  {"action": "goto", "url": "https://www.reddit.com"},
-  {"action": "wait", "duration": 2000},
-  {"action": "fill", "selector": "input[name='q']", "value": "AI agents"},
-  {"action": "keyboard_press", "key": "Enter"}
 ]
 
 Input: Search for iPhone 16 on Flipkart and click the first product

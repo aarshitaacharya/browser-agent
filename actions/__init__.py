@@ -5,7 +5,6 @@ from .keyboard_press import handle_keyboard_press
 from .wait import handle_wait
 from .scroll import handle_scroll
 from .screenshot import handle_screenshot
-from .extract import handle_extract
 from .dismiss_popup import handle_dismiss_popup
 
 ACTION_HANDLERS = {
@@ -16,7 +15,6 @@ ACTION_HANDLERS = {
     "wait": handle_wait,
     "scroll": handle_scroll,
     "screenshot": handle_screenshot,
-    "extract": handle_extract,
     "dismiss_popup": handle_dismiss_popup,
 }
 

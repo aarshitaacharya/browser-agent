@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
-from gpt_parser import parse_command
-from browser_controller import execute_action
+from agents.gpt_parser import parse_command
+from agents.browser_controller import execute_action
 from browser_session import browser_session
 from fastapi.middleware.cors import CORSMiddleware
-from extract_api import router as extract_router
+from api.extract_api import router as extract_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
