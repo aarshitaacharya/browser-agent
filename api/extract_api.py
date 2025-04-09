@@ -1,23 +1,30 @@
 from fastapi import APIRouter
-from playwright.async_api import Error as PlaywrightError
-from playwright.async_api import Page
-from browser_session import browser_session
+from playwright.async_api import Error as PlaywrightError, Page
 from bs4 import BeautifulSoup
+from browser_session import browser_session
+from utils.logger import logger
 
 router = APIRouter()
 
+
 @router.post("/extract")
 async def extract_elements():
-    page = browser_session.page
+    """
+    API endpoint to extract visible and interactive elements from the current browser page.
+
+    Returns:
+        dict: Contains list of elements and count, or error message.
+    """
+    page: Page | None = browser_session.page
 
     if not page:
+        logger.warning("Extract failed: no active browser page.")
         return {"error": "No active browser page"}
 
     try:
         content = await page.content()
         soup = BeautifulSoup(content, "html.parser")
 
-        # Extract only visible and interactive elements
         tags_to_extract = ["a", "button", "img", "input"]
         extracted = []
 
@@ -44,13 +51,24 @@ async def extract_elements():
                 "role": role
             })
 
+        logger.info(f"Extracted {len(extracted)} elements from page.")
         return {"elements": extracted, "count": len(extracted)}
 
     except PlaywrightError as e:
+        logger.exception("Error during page content extraction.")
         return {"error": str(e)}
 
 
-def build_safe_selector(tag):
+def build_safe_selector(tag) -> str | None:
+    """
+    Builds a simple CSS selector for the given tag.
+
+    Args:
+        tag (bs4.element.Tag): The HTML tag.
+
+    Returns:
+        str | None: A safe selector or None if not applicable.
+    """
     tag_name = tag.name
     tag_id = tag.get("id")
     tag_class = tag.get("class")
@@ -63,7 +81,18 @@ def build_safe_selector(tag):
     else:
         return tag_name
 
-def infer_role(tag, src=""):
+
+def infer_role(tag, src: str = "") -> str:
+    """
+    Infers the semantic role of an element based on its attributes.
+
+    Args:
+        tag (bs4.element.Tag): The HTML tag.
+        src (str): Optional src for images.
+
+    Returns:
+        str: Inferred role name.
+    """
     tag_name = tag.name.lower()
     text = (
         tag.get_text(strip=True).lower()
@@ -97,13 +126,10 @@ def infer_role(tag, src=""):
         return "submit_button"
     if tag_name in ["a", "img"] and (
         any(sub in href for sub in ["item_", "product", "pid", "/p/", "/product"]) or
-        "inventory_item" in " ".join(tag.get("class", [])).lower()
+        "inventory_item" in classes
     ):
         return "product_link"
     if tag.name == "a" and tag.get("id") == "thumbnail":
         return "video"
-
-
-    
 
     return "unknown"

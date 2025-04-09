@@ -1,80 +1,78 @@
 import re
 import httpx
 import difflib
-from typing import Optional
 from playwright.async_api import Page
 from utils.logger import logger
 
 
-# Role-based matching (shared config could move this to constants.py later)
-ORDINAL_MAP = {
-    "first": 0,
-    "second": 1,
-    "third": 2,
-    "fourth": 3
-}
-
-ROLE_LOOKUP = {
-    "login": "login_button",
-    "product": "product_link",
-    "link": "link",
-    "image": "IMG",
-    "add to cart": "add_to_cart_button",
-    "button": "BUTTON",
-    "video": "VIDEO"
-}
-
-
 def is_similar(text1: str, text2: str) -> bool:
-    """Check if two strings are roughly similar (fuzzy match)."""
+    """
+    Fuzzy similarity check between two strings.
+    """
     return difflib.SequenceMatcher(None, text1.lower(), text2.lower()).ratio() > 0.6
 
 
-async def fetch_extracted_elements() -> Optional[list]:
-    """Calls the extract API and returns extracted elements."""
+async def handle_click(action: dict, page: Page) -> str:
+    """
+    Handles a click action on the page using either:
+    1. Role and ordinal-based matching (e.g., "first button")
+    2. A direct selector provided by the LLM
+
+    Args:
+        action (dict): Dictionary containing 'query' or 'selector'.
+        page (Page): The current Playwright page instance.
+
+    Returns:
+        str: Status message indicating the result of the click action.
+    """
+    logger.info("Using extract API to find elements for click.")
+
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post("http://localhost:8000/extract")
             data = response.json()
-            return data.get("elements", [])
     except Exception as e:
-        logger.exception("Failed to call extract API.")
-        return None
+        return f"Failed to call extract API: {str(e)}"
 
-async def handle_click(action: dict, page: Page) -> str:
-    """
-    Handles clicking an element by role, ordinal, or direct selector.
+    if "elements" not in data:
+        return "No elements returned from extract API"
 
-    Args:
-        action (dict): Should include 'query' or 'selector'.
-        page (Page): The Playwright page.
+    elements = data["elements"]
+    query = action.get("query", "").lower().strip()
 
-    Returns:
-        str: Click result message.
-    """
-    logger.info("Handling click action...")
+    logger.info(f"Handling click... Query: '{query}'")
 
-    query = action.get("query", "").strip().lower()
-    selector = action.get("selector")
+    if not query:
+        return "Click failed - no query provided"
 
-    if not query and not selector:
-        logger.warning("Click failed - no query or selector provided.")
-        return "Click failed - no valid selector, tag, or role-based match found"
+    # Priority 1: Match by ordinal + role (e.g., "first button", "second image")
+    ordinal_map = {
+        "first": 0,
+        "second": 1,
+        "third": 2,
+        "fourth": 3
+    }
 
-    elements = await fetch_extracted_elements()
-    if not elements:
-        return "Click failed - extract API returned no elements"
-
-    logger.info(f"Click query: '{query}'")
-
-    # riority 1: Match by role + ordinal (e.g. "first button", "second image") ---
     role_match = re.search(r"(first|second|third|fourth)?\s*(login|product|link|image|button|add to cart|video)", query)
+
     if role_match:
         ordinal = role_match.group(1) or "first"
         role = role_match.group(2)
-        position = ORDINAL_MAP.get(ordinal, 0)
-        role_target = ROLE_LOOKUP.get(role, role)
 
+        role_lookup = {
+            "login": "login_button",
+            "product": "product_link",
+            "link": "link",
+            "image": "IMG",
+            "add to cart": "add_to_cart_button",
+            "button": "BUTTON",
+            "video": "VIDEO",
+        }
+
+        position = ordinal_map.get(ordinal, 0)
+        role_target = role_lookup.get(role, role)
+
+        # Filter matching elements by role or tag
         filtered = [
             el for el in elements
             if el.get("role") == role_target or el.get("tag") == role_target.upper()
@@ -82,9 +80,10 @@ async def handle_click(action: dict, page: Page) -> str:
 
         if filtered:
             selector = filtered[0]["selector_snippet"]
-            logger.info(f"Resolved selector from role '{role_target}': {selector}")
             try:
+                # Get all matching elements from the live page
                 element_handles = await page.query_selector_all(selector)
+
                 if not element_handles or position >= len(element_handles):
                     return f"No visible element at position {position + 1} for selector '{selector}'"
 
@@ -93,22 +92,19 @@ async def handle_click(action: dict, page: Page) -> str:
                 await target.click()
                 return f"Executed visible click on element with selector '{selector}' at position {position + 1}"
             except Exception as e:
-                logger.exception("Failed clicking role-based element.")
                 return f"Failed to click on selector '{selector}' at position {position + 1}: {str(e)}"
-
         else:
-            logger.warning(f"No element found matching role '{role_target}'")
             return f"No element found matching role '{role_target}'"
 
-    # Priority 2: LLM-specified selector
+    # Priority 2: Use selector directly from action, if provided
+    selector = action.get("selector")
     if selector:
-        logger.info(f"Attempting click using provided selector: {selector}")
+        logger.info(f"Using selector from action: {selector}")
         try:
             await page.wait_for_selector(selector, timeout=10000)
             await page.click(selector)
             return f"Executed generic click using selector '{selector}'"
         except Exception as e:
-            logger.exception("Failed to click using provided selector.")
             return f"Failed to click using selector '{selector}': {str(e)}"
 
     return "Click failed - no valid selector, tag, or role-based match found"
