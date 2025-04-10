@@ -66,7 +66,7 @@ brew install tesseract
 Start the backend:
 
 ```bash
-uvicorn main:app --reload
+PYTHONPATH=$(pwd) python -m uvicorn main:app --reload
 ```
 
 ### 3. Set up React frontend
