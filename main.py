@@ -4,7 +4,7 @@ from browser_session import browser_session
 from agents.gpt_parser import parse_command
 from fastapi.middleware.cors import CORSMiddleware
 from api.extract_api import router as extract_router
-from api.interact_api import router as interact_router  # NEW
+from api.interact_api import router as interact_router 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
