@@ -16,14 +16,15 @@ And it will:
 - Capture the page
 
 ---
+## 🎥 Demo Video
 
-## 🎥 Demo
+Watch the full product demo here: 
 
-[![Watch the Demo](https://cdn.loom.com/sessions/thumbnails/5fd6f10d394a46eb80567f09b1cd07f3-00001.gif)](https://www.loom.com/share/5fd6f10d394a46eb80567f09b1cd07f3)
+[![Demo](./demo-thumb.png)](https://www.loom.com/share/5fd6f10d394a46eb80567f09b1cd07f3)
 
-## ⚙️ Installation
+## ⚙️ Installation Walkthrough
 
-[![Watch the Installation](https://cdn.loom.com/sessions/thumbnails/1e232cfd926942b48b09da2f5da11a51-00001.gif)](https://www.loom.com/share/1e232cfd926942b48b09da2f5da11a51)
+Step-by-step install guide: [Installation on Loom](https://www.loom.com/share/1e232cfd926942b48b09da2f5da11a51)
 
 
 ## How it works
