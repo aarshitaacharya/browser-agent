@@ -32,3 +32,6 @@ test-results/
 
 # Ollama model cache 
 ~/.ollama/
+
+# Agent screenshots written to the repo root
+/screenshot*.png

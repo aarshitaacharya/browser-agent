@@ -1,0 +1,7 @@
+# Optional: CAPTCHA solving via Tesseract OCR.
+#   brew install tesseract && pip install -r requirements-ocr.txt
+# Without these the agent still runs; it just skips the CAPTCHA step.
+
+-r requirements.txt
+pillow>=11.0
+pytesseract>=0.3.13

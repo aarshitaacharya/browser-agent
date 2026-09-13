@@ -1,3 +1,7 @@
+# Central registry mapping the action names the LLM (or a test) can emit to
+# the handler that executes them. agents/browser_controller.py looks actions
+# up here by name; adding a new action type means writing a handler module
+# and registering it in this dict.
 from .goto import handle_goto
 from .click import handle_click
 from .fill import handle_fill
@@ -17,4 +21,3 @@ ACTION_HANDLERS = {
     "screenshot": handle_screenshot,
     "dismiss_popup": handle_dismiss_popup,
 }
-

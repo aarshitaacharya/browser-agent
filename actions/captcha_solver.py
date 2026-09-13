@@ -1,9 +1,19 @@
 import io
 import asyncio
-from PIL import Image, ImageFilter
-import pytesseract
 from playwright.async_api import Page
 from utils.logger import logger
+
+# Pillow and pytesseract are only needed for CAPTCHA solving, which the README
+# lists as optional. Importing them at module scope made them a hard dependency
+# of the whole app, since actions/goto.py imports this module on startup.
+try:
+    from PIL import Image, ImageFilter
+    import pytesseract
+
+    OCR_AVAILABLE = True
+except ImportError:  # pragma: no cover - depends on local install
+    Image = ImageFilter = pytesseract = None
+    OCR_AVAILABLE = False
 
 
 async def solve_amazon_captcha(page: Page) -> str:
@@ -16,6 +26,10 @@ async def solve_amazon_captcha(page: Page) -> str:
     Returns:
         str: Status message indicating CAPTCHA solve result.
     """
+    if not OCR_AVAILABLE:
+        logger.info("Skipping CAPTCHA solve: pillow/pytesseract are not installed.")
+        return "CAPTCHA solving unavailable - install pillow and pytesseract"
+
     try:
         logger.info("Searching for CAPTCHA image on the page.")
 
@@ -72,7 +86,7 @@ async def solve_amazon_captcha(page: Page) -> str:
         return f"CAPTCHA solver failed: {e}"
 
 
-def preprocess_image(img: Image.Image) -> Image.Image:
+def preprocess_image(img: "Image.Image") -> "Image.Image":
     """
     Applies preprocessing to an image to improve OCR accuracy.
 

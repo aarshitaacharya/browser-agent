@@ -36,7 +36,7 @@ async def handle_fill(action: dict, page: Page) -> str:
         if not sel:
             continue
         try:
-            element = page.locator(sel)
+            element = page.locator(sel).first
             if await element.is_visible():
                 await element.fill(value)
                 logger.info(f"Filled '{value}' into selector: {sel}")

@@ -35,6 +35,20 @@ async def execute_action(actions: list[dict], page: Page) -> list[str]:
             result = f"Failed action: {action_type} - {str(e)}"
 
         results.append(result)
+
+        # If the browser window was closed or crashed mid-run, every
+        # remaining action would fail with the same low-level error. One
+        # clear message beats repeating that N times, and page.wait_for_timeout
+        # itself would raise on a closed page.
+        if page.is_closed():
+            remaining = len(actions) - index - 1
+            if remaining:
+                logger.warning(f"Page closed mid-run; skipping {remaining} remaining action(s).")
+                results.append(
+                    f"Skipped {remaining} remaining action(s) - the browser window was closed."
+                )
+            break
+
         await page.wait_for_timeout(1000)
 
     return results

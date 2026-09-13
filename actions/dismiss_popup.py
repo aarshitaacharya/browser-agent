@@ -49,7 +49,7 @@ async def _try_dismiss_in_context(context: Page | Frame, context_name: str) -> s
     """
     for text in COMMON_POPUP_TEXTS:
         try:
-            element = context.locator(f"text={text}")
+            element = context.locator(f"text={text}").first
             if await element.is_visible():
                 await element.click()
                 logger.info(f"Dismissed popup in {context_name}: '{text}'")

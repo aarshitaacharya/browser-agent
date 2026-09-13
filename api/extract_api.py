@@ -6,6 +6,55 @@ from utils.logger import logger
 
 router = APIRouter()
 
+TAGS_TO_EXTRACT = ["a", "button", "img", "input"]
+
+
+async def extract_elements_from_page(page: Page) -> list[dict]:
+    """
+    Parses the current DOM into a flat list of interactive elements.
+
+    Each element carries a CSS selector plus the index it occupies among all
+    elements matching that same selector, so a caller can address the Nth
+    element of a role without re-deriving it from the live page.
+
+    Args:
+        page (Page): The Playwright page instance.
+
+    Returns:
+        list[dict]: Structured descriptions of interactive elements.
+    """
+    content = await page.content()
+    soup = BeautifulSoup(content, "html.parser")
+
+    extracted = []
+    seen_selectors: dict[str, int] = {}
+
+    for tag in soup.find_all(TAGS_TO_EXTRACT):
+        selector = build_safe_selector(tag)
+        if not selector:
+            continue
+
+        src = tag.get("src") if tag.has_attr("src") else ""
+
+        # How many earlier elements already used this selector. Playwright's
+        # query_selector_all returns nodes in document order, so this doubles
+        # as the position of this element within that selector's matches.
+        index = seen_selectors.get(selector, 0)
+        seen_selectors[selector] = index + 1
+
+        extracted.append({
+            "tag": tag.name.upper(),
+            "text": tag.get_text(strip=True),
+            "alt": tag.get("alt", ""),
+            "src": src,
+            "href": tag.get("href", ""),
+            "selector_snippet": selector,
+            "index": index,
+            "role": infer_role(tag, src),
+        })
+
+    return extracted
+
 
 @router.post("/extract")
 async def extract_elements():
@@ -15,42 +64,14 @@ async def extract_elements():
     Returns:
         dict: Contains list of elements and count, or error message.
     """
-    page: Page | None = browser_session.page
-
-    if not page:
-        logger.warning("Extract failed: no active browser page.")
+    try:
+        page = await browser_session.ensure_ready()
+    except Exception as e:
+        logger.warning(f"Extract failed: no active browser page ({e}).")
         return {"error": "No active browser page"}
 
     try:
-        content = await page.content()
-        soup = BeautifulSoup(content, "html.parser")
-
-        tags_to_extract = ["a", "button", "img", "input"]
-        extracted = []
-
-        for tag in soup.find_all(tags_to_extract):
-            tag_name = tag.name.upper()
-            text = tag.get_text(strip=True)
-            alt = tag.get("alt", "")
-            src = tag.get("src") if tag.has_attr("src") else ""
-            href = tag.get("href", "")
-
-            selector = build_safe_selector(tag)
-            if not selector:
-                continue
-
-            role = infer_role(tag, src)
-
-            extracted.append({
-                "tag": tag_name,
-                "text": text,
-                "alt": alt,
-                "src": src,
-                "href": href,
-                "selector_snippet": selector,
-                "role": role
-            })
-
+        extracted = await extract_elements_from_page(page)
         logger.info(f"Extracted {len(extracted)} elements from page.")
         return {"elements": extracted, "count": len(extracted)}
 
@@ -63,6 +84,10 @@ def build_safe_selector(tag) -> str | None:
     """
     Builds a simple CSS selector for the given tag.
 
+    Attribute selectors are used instead of `#id` / `.class` shorthand so that
+    ids and class names containing CSS-special characters (":", "/", leading
+    digits) don't produce a selector Playwright refuses to parse.
+
     Args:
         tag (bs4.element.Tag): The HTML tag.
 
@@ -74,12 +99,20 @@ def build_safe_selector(tag) -> str | None:
     tag_class = tag.get("class")
 
     if tag_id:
-        return f"{tag_name}#{tag_id}"
+        return f'{tag_name}[id="{escape_attr(tag_id)}"]'
     elif tag_class:
-        safe_class = tag_class[0].replace(" ", "").replace("\n", "")
-        return f"{tag_name}.{safe_class}"
-    else:
-        return tag_name
+        first_class = tag_class[0].strip()
+        if first_class:
+            return f'{tag_name}[class~="{escape_attr(first_class)}"]'
+
+    return tag_name
+
+
+def escape_attr(value: str) -> str:
+    """
+    Escapes a value for safe use inside a double-quoted CSS attribute selector.
+    """
+    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def infer_role(tag, src: str = "") -> str:
@@ -105,7 +138,6 @@ def infer_role(tag, src: str = "") -> str:
     href = tag.get("href", "") or ""
     name = tag.get("name", "").lower()
     placeholder = tag.get("placeholder", "").lower()
-    tag_id = tag.get("id", "").lower()
     classes = " ".join(tag.get("class", [])).lower()
 
     if tag_name in ["a", "button", "input"] and "login" in text:

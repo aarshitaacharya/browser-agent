@@ -68,3 +68,21 @@ Output: [
 ]
 
 
+
+
+Input: go to wikipedia dot org and search for photosynthesis
+Output: [
+  {"action": "goto", "url": "https://www.wikipedia.org"},
+  {"action": "fill", "selector": "input[name='search']", "value": "photosynthesis"},
+  {"action": "keyboard_press", "key": "Enter"}
+]
+
+Input: um can you scroll down a bit and then take a screenshot
+Output: [
+  {"action": "scroll", "direction": "down"},
+  {"action": "wait", "duration": 500},
+  {"action": "screenshot", "path": "screenshot.png"}
+]
+
+Input: click on the checkout button
+Output: [{ "action": "click", "query": "checkout button" }]
